@@ -1,67 +1,51 @@
 import { NextResponse } from 'next/server';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
-
-// Database path - uses the same database as the Flask app
-const DB_PATH = path.resolve(process.cwd(), '../restaurant.db');
-
-async function getDatabase() {
-  return open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-}
+import { query } from '@/lib/db';
 
 export async function GET() {
   try {
-    const db = await getDatabase();
-    
-    // Get menu categories and items
-    const categories = await db.all(`
-      SELECT 
-        c.id,
-        c.name,
-        c.display_name,
-        c.description,
-        c."order",
-        c.is_drink_category
-      FROM menu_category c
-      ORDER BY c."order" ASC
+    // Get menu categories
+    const categoriesResult = await query(`
+      SELECT
+        id,
+        name,
+        description,
+        display_order,
+        is_active
+      FROM menu_categories
+      WHERE is_active = true
+      ORDER BY display_order ASC
     `);
-    
-    const menuItems = await db.all(`
-      SELECT 
-        m.id,
-        m.name,
-        m.description,
-        m.price,
-        m.category_id,
-        m.image_path,
-        m.vegetarian,
-        m.vegan,
-        m.spicy,
-        m.gluten_free,
-        m.lactose_free,
-        m.kid_friendly,
-        m.alcohol_free,
-        m.contains_alcohol,
-        m.homemade,
-        m.sugar_free,
-        m.recommended,
-        m."order"
-      FROM menu_item m
-      ORDER BY m.category_id ASC, m."order" ASC, m.name ASC
+
+    // Get menu items
+    const itemsResult = await query(`
+      SELECT
+        id,
+        category_id,
+        name,
+        description,
+        price,
+        is_vegetarian,
+        is_vegan,
+        is_gluten_free,
+        is_spicy,
+        allergens,
+        image_url,
+        display_order,
+        is_available
+      FROM menu_items
+      WHERE is_available = true
+      ORDER BY category_id ASC, display_order ASC, name ASC
     `);
-    
+
+    const categories = categoriesResult.rows;
+    const menuItems = itemsResult.rows;
+
     // Group items by category
     const categoriesWithItems = categories.map(category => ({
       ...category,
       items: menuItems.filter(item => item.category_id === category.id)
     }));
-    
-    await db.close();
-    
+
     return NextResponse.json({
       success: true,
       data: {
@@ -75,12 +59,12 @@ export async function GET() {
         'Expires': '0',
       }
     });
-    
+
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to fetch menu data',
         message: error instanceof Error ? error.message : 'Unknown error'
       },

@@ -1,19 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
+import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import './init-db';
-
-const DB_PATH = path.resolve(process.cwd(), '../restaurant.db');
-
-async function getDatabase() {
-  return open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-}
 
 // Login
 export async function POST(request: NextRequest) {
@@ -27,27 +16,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    
     // Get user
-    const user = await db.get(
-      'SELECT * FROM admin_users WHERE email = ? AND is_active = 1',
+    const userResult = await query(
+      'SELECT * FROM admin_users WHERE email = $1 AND is_active = true',
       [email]
     );
 
-    if (!user) {
-      await db.close();
+    if (userResult.rows.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Ungültige Anmeldedaten' },
         { status: 401 }
       );
     }
 
+    const user = userResult.rows[0];
+
     // Verify password
     const isValid = await bcrypt.compare(password, user.password_hash);
 
     if (!isValid) {
-      await db.close();
       return NextResponse.json(
         { success: false, error: 'Ungültige Anmeldedaten' },
         { status: 401 }
@@ -58,19 +45,17 @@ export async function POST(request: NextRequest) {
     const sessionId = uuidv4();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    await db.run(
+    await query(
       `INSERT INTO user_sessions (id, user_id, expires_at)
-       VALUES (?, ?, ?)`,
+       VALUES ($1, $2, $3)`,
       [sessionId, user.id, expiresAt.toISOString()]
     );
 
     // Update last login
-    await db.run(
-      'UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+    await query(
+      'UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
       [user.id]
     );
-
-    await db.close();
 
     // Create response with session cookie
     const response = NextResponse.json({
@@ -115,24 +100,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-
     // Get session with user
-    const session = await db.get(
+    const sessionResult = await query(
       `SELECT u.* FROM user_sessions s
        JOIN admin_users u ON s.user_id = u.id
-       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+       WHERE s.id = $1 AND s.expires_at > NOW()`,
       [sessionId]
     );
 
-    await db.close();
-
-    if (!session) {
+    if (sessionResult.rows.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Sitzung abgelaufen' },
         { status: 401 }
       );
     }
+
+    const session = sessionResult.rows[0];
 
     return NextResponse.json({
       success: true,
@@ -159,9 +142,7 @@ export async function DELETE(request: NextRequest) {
     const sessionId = request.cookies.get('session')?.value;
 
     if (sessionId) {
-      const db = await getDatabase();
-      await db.run('DELETE FROM user_sessions WHERE id = ?', [sessionId]);
-      await db.close();
+      await query('DELETE FROM user_sessions WHERE id = $1', [sessionId]);
     }
 
     const response = NextResponse.json({
