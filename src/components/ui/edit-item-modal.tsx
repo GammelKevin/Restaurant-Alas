@@ -46,7 +46,7 @@ export function EditItemModal({ isOpen, onClose, item, onSave }: EditItemModalPr
     }
   };
 
-  const handleChange = (field: keyof MenuItem, value: any) => {
+  const handleChange = (field: keyof MenuItem, value: string | number | boolean | null) => {
     if (formData) {
       setFormData({ ...formData, [field]: value });
     }

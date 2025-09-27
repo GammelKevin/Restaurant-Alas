@@ -145,7 +145,7 @@ export default function AdminPage() {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.25, 0.4, 0.25, 1]
+        ease: [0.25, 0.4, 0.25, 1] as const
       }
     }
   };
@@ -156,7 +156,7 @@ export default function AdminPage() {
       scale: 1.02,
       transition: {
         duration: 0.3,
-        ease: "easeOut"
+        ease: "easeOut" as const
       }
     },
     tap: {

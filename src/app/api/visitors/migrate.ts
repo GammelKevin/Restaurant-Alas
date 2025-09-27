@@ -13,7 +13,7 @@ export async function migrateVisitorTables() {
   try {
     // Check if gallery_views column exists
     const tableInfo = await db.all("PRAGMA table_info(daily_stats)");
-    const hasGalleryViews = tableInfo.some((col: any) => col.name === 'gallery_views');
+    const hasGalleryViews = tableInfo.some((col: { name: string }) => col.name === 'gallery_views');
 
     if (!hasGalleryViews) {
       console.log('Adding gallery_views column to daily_stats table...');

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV === 'development') {
       // Use session ID to generate consistent fake IP per session
       if (sessionId) {
-        const hash = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const hash = sessionId.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
         const octet1 = 192;
         const octet2 = 168;
         const octet3 = (hash % 10) + 1;
@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
            realIp ||
            cfConnectingIp ||
            xClientIp ||
-           request.ip ||
            '127.0.0.1';
     }
 
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Get visitor statistics
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const db = await getDatabase();
     

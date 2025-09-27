@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +27,7 @@ export function Navigation() {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <div className="flex items-center">
-              <a href="/" className="flex items-center">
+              <Link href="/" className="flex items-center">
                 <Image
                   src="/logo/logo.png"
                   alt="Restaurant ALAS"
@@ -35,7 +36,7 @@ export function Navigation() {
                   className="h-12 md:h-14 w-auto"
                   priority
                 />
-              </a>
+              </Link>
             </div>
 
             {/* Desktop Navigation */}

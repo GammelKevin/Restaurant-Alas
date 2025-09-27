@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
-import Image from "next/image";
 import { Navigation } from "@/components/ui/navigation";
 import { MenuItemCard } from "@/components/ui/menu-item-card";
 

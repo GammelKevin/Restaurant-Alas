@@ -10,7 +10,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Upload,
   Image as ImageIcon,
 } from "lucide-react";
 import { useToast } from "@/context/toast-context";

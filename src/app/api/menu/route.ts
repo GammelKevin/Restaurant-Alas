@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
@@ -13,7 +13,7 @@ async function getDatabase() {
   });
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const db = await getDatabase();
     

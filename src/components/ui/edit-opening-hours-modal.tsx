@@ -25,7 +25,7 @@ interface EditOpeningHoursModalProps {
   hour: OpeningHour | null;
   onClose: () => void;
   onSave: (hour: OpeningHour) => void;
-  onChange: (field: keyof OpeningHour, value: any) => void;
+  onChange: (field: keyof OpeningHour, value: string | number | boolean | null) => void;
 }
 
 export function EditOpeningHoursModal({
@@ -160,13 +160,13 @@ export function EditOpeningHoursModal({
                         <JollyDatePicker
                           label="Von"
                           value={hour.vacation_start ? parseDate(hour.vacation_start) : null}
-                          onChange={(date) => onChange('vacation_start', date?.toString())}
+                          onChange={(date) => onChange('vacation_start', date?.toString() || null)}
                           className=""
                         />
                         <JollyDatePicker
                           label="Bis"
                           value={hour.vacation_end ? parseDate(hour.vacation_end) : null}
-                          onChange={(date) => onChange('vacation_end', date?.toString())}
+                          onChange={(date) => onChange('vacation_end', date?.toString() || null)}
                           className=""
                         />
                       </div>

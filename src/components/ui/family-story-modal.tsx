@@ -77,11 +77,11 @@ export function FamilyStoryModal({ isOpen, onClose }: FamilyStoryModalProps) {
                 </p>
 
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-8">
-                  Warum "Alas"?
+                  Warum &quot;Alas&quot;?
                 </h3>
 
                 <p className="text-gray-700 dark:text-gray-200 mb-6">
-                  Der Name "Alas" steht für alles, was unsere Familie ausmacht. Es ist mehr als ein Restaurant – es ist das Ergebnis jahrelanger harter Arbeit, gemeinsamer Träume und der Vision, authentische griechische Gastfreundschaft nach Deutschland zu bringen. Am 15. Dezember 2023 wurde dieser Traum mit der Eröffnung unseres Restaurants Wirklichkeit.
+                  Der Name &quot;Alas&quot; steht für alles, was unsere Familie ausmacht. Es ist mehr als ein Restaurant – es ist das Ergebnis jahrelanger harter Arbeit, gemeinsamer Träume und der Vision, authentische griechische Gastfreundschaft nach Deutschland zu bringen. Am 15. Dezember 2023 wurde dieser Traum mit der Eröffnung unseres Restaurants Wirklichkeit.
                 </p>
 
                 <p className="text-gray-700 dark:text-gray-200">

@@ -68,7 +68,7 @@ export function AboutSection() {
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Herzlich willkommen im Restaurant ALAS! Seit über 30 Jahren servieren wir Ihnen 
             authentische griechische Spezialitäten in familiärer Atmosphäre. Unser Restaurant 
-            wurde 2024 als "Lokal des Jahres Deutschland" für griechische Küche ausgezeichnet.
+            wurde 2024 als &quot;Lokal des Jahres Deutschland&quot; für griechische Küche ausgezeichnet.
           </p>
           
           <motion.button

@@ -3,10 +3,10 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Clock, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import Image from "next/image";
 
-interface MenuItemCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface MenuItemCardProps {
   imageUrl?: string | null;
   name: string;
   description?: string;
@@ -15,6 +15,7 @@ interface MenuItemCardProps extends React.HTMLAttributes<HTMLDivElement> {
   isAdminMode?: boolean;
   onImageUpload?: () => void;
   searchTerm?: string;
+  className?: string;
 }
 
 const MenuItemCard = React.forwardRef<HTMLDivElement, MenuItemCardProps>(
@@ -28,8 +29,7 @@ const MenuItemCard = React.forwardRef<HTMLDivElement, MenuItemCardProps>(
       badges = [],
       isAdminMode = false,
       onImageUpload,
-      searchTerm,
-      ...props
+      searchTerm
     },
     ref
   ) => {
@@ -72,8 +72,6 @@ const MenuItemCard = React.forwardRef<HTMLDivElement, MenuItemCardProps>(
         initial="initial"
         animate="animate"
         whileHover="hover"
-        layout
-        {...props}
       >
         {/* Image Section - Only render if image exists */}
         {imageUrl && (

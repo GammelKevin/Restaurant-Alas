@@ -228,7 +228,7 @@ export default function DatenschutzPage() {
                 </p>
                 <p className="text-gray-600 dark:text-gray-300 mb-3">
                   Eine verschlüsselte Verbindung erkennen Sie daran, dass die
-                  Adresszeile des Browsers von "http://" auf "https://" wechselt
+                  Adresszeile des Browsers von &quot;http://&quot; auf &quot;https://&quot; wechselt
                   und an dem Schloss-Symbol in Ihrer Browserzeile.
                 </p>
                 <p className="text-gray-600 dark:text-gray-300">

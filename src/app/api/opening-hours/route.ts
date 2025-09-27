@@ -24,7 +24,7 @@ const WEEKDAY_ORDER: { [key: string]: number } = {
   Sonntag: 7,
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const db = await getDatabase();
 
@@ -134,7 +134,13 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-function isOnVacation(hours: any): boolean {
+interface VacationHours {
+  vacation_active?: number | boolean | null;
+  vacation_start?: string | null;
+  vacation_end?: string | null;
+}
+
+function isOnVacation(hours: VacationHours): boolean {
   if (!hours.vacation_active || !hours.vacation_start || !hours.vacation_end) {
     return false;
   }

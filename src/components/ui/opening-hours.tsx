@@ -23,7 +23,7 @@ export function OpeningHours() {
 
   useEffect(() => {
     fetchOpeningHours();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchOpeningHours = async () => {
     try {
@@ -137,7 +137,7 @@ export function OpeningHours() {
     if (hour.vacation_active || hour.vacation_active === 1) return "Urlaub";
 
     // Helper to check if a time value is valid
-    const isValidTime = (time: any): boolean => {
+    const isValidTime = (time: string | number | null | undefined): boolean => {
       if (!time) return false;
       const timeStr = String(time).trim();
       return timeStr !== "" && timeStr !== "0" && timeStr !== "null";

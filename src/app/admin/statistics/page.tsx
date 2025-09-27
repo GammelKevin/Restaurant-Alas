@@ -3,19 +3,16 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { 
-  ArrowLeft, 
-  TrendingUp, 
-  Users, 
-  Eye,
+import {
+  ArrowLeft,
+  TrendingUp,
+  Users,
   Clock,
   Globe,
   Monitor,
   Smartphone,
   RotateCcw,
-  Activity,
   Calendar,
-  ChartBar,
   RefreshCw
 } from "lucide-react";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
@@ -52,7 +49,7 @@ export default function AdminStatisticsPage() {
     // Auto refresh every 30 seconds
     const interval = setInterval(fetchStatistics, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStatistics = async () => {
     try {

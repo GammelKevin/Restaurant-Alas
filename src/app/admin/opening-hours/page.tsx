@@ -7,18 +7,14 @@ import { parseDate } from "@internationalized/date";
 import { JollyDatePicker } from "@/components/ui/date-picker";
 import {
   ArrowLeft,
-  Clock,
   Calendar,
   Save,
   X,
   Edit2,
   Loader2,
-  Sun,
   Moon,
   Coffee,
   Palmtree,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/context/toast-context";
 
@@ -45,7 +41,7 @@ export default function AdminOpeningHoursPage() {
 
   useEffect(() => {
     fetchOpeningHours();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchOpeningHours = async () => {
     try {
@@ -125,7 +121,7 @@ export default function AdminOpeningHoursPage() {
     }
   };
 
-  const handleFieldChange = (field: keyof OpeningHour, value: any) => {
+  const handleFieldChange = (field: keyof OpeningHour, value: string | number | boolean | null) => {
     if (!editingHour) return;
     setEditingHour({ ...editingHour, [field]: value });
   };
@@ -428,7 +424,7 @@ export default function AdminOpeningHoursPage() {
                               onChange={(date) =>
                                 handleFieldChange(
                                   "vacation_start",
-                                  date?.toString(),
+                                  date?.toString() || null,
                                 )
                               }
                               className="w-full"
@@ -443,7 +439,7 @@ export default function AdminOpeningHoursPage() {
                               onChange={(date) =>
                                 handleFieldChange(
                                   "vacation_end",
-                                  date?.toString(),
+                                  date?.toString() || null,
                                 )
                               }
                               className="w-full"

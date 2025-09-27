@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Badge } from "lucide-react";
 import Image from "next/image";
 
 interface MenuItem {
@@ -143,7 +142,7 @@ export function MenuSection() {
           </p>
         </motion.div>
 
-        {categories.map((category, categoryIndex) => (
+        {categories.map((category) => (
           <motion.div
             key={category.id}
             className="mb-12"
@@ -167,7 +166,7 @@ export function MenuSection() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
             >
-              {category.items.map((item, itemIndex) => (
+              {category.items.map((item) => (
                 <motion.div
                   key={item.id}
                   variants={itemVariants}
