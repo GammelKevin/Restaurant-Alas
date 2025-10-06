@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 // Database connection URL from environment variable
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_bJtkjTyL52Fe@ep-calm-unit-agzzazuh-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_wymoGYT8Zs9t@ep-twilight-band-ag8cg6zq-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require';
 
 // Create a connection pool
 const pool = new Pool({

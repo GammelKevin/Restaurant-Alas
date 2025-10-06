@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
-import path from "path";
-
-// Database path - uses the same database as the Flask app
-const DB_PATH = path.resolve(process.cwd(), "../restaurant.db");
-
-async function getDatabase() {
-  return open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-}
+import { query } from '@/lib/db';
 
 // German weekday order for proper sorting
 const WEEKDAY_ORDER: { [key: string]: number } = {
@@ -26,23 +14,24 @@ const WEEKDAY_ORDER: { [key: string]: number } = {
 
 export async function GET() {
   try {
-    const db = await getDatabase();
-
     // Get opening hours
-    const openingHours = await db.all(`
+    const result = await query(`
       SELECT
         id,
-        day,
+        day_name as day,
         open_time_1,
         close_time_1,
         open_time_2,
         close_time_2,
-        closed,
+        is_closed as closed,
         vacation_start,
         vacation_end,
         vacation_active
       FROM opening_hours
+      ORDER BY day_of_week
     `);
+
+    const openingHours = result.rows;
 
     // Sort by weekday order and check for vacation status
     const sortedHours = openingHours
@@ -54,8 +43,6 @@ export async function GET() {
       .sort(
         (a, b) => (WEEKDAY_ORDER[a.day] || 999) - (WEEKDAY_ORDER[b.day] || 999),
       );
-
-    await db.close();
 
     return NextResponse.json({
       success: true,
@@ -77,7 +64,6 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const db = await getDatabase();
 
     // Validate required fields
     if (!body.id || !body.day) {
@@ -91,31 +77,30 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the opening hours
-    await db.run(
+    await query(
       `UPDATE opening_hours
-       SET open_time_1 = ?,
-           close_time_1 = ?,
-           open_time_2 = ?,
-           close_time_2 = ?,
-           closed = ?,
-           vacation_start = ?,
-           vacation_end = ?,
-           vacation_active = ?
-       WHERE id = ?`,
+       SET open_time_1 = $1,
+           close_time_1 = $2,
+           open_time_2 = $3,
+           close_time_2 = $4,
+           is_closed = $5,
+           vacation_start = $6,
+           vacation_end = $7,
+           vacation_active = $8,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $9`,
       [
         body.open_time_1 || null,
         body.close_time_1 || null,
         body.open_time_2 || null,
         body.close_time_2 || null,
-        body.closed ? 1 : 0,
+        body.closed || false,
         body.vacation_start || null,
         body.vacation_end || null,
-        body.vacation_active ? 1 : 0,
+        body.vacation_active || false,
         body.id,
       ],
     );
-
-    await db.close();
 
     return NextResponse.json({
       success: true,

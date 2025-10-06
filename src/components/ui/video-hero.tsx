@@ -11,9 +11,6 @@ interface VideoHeroProps {
   title?: string;
   subtitle?: string;
   badge?: string;
-  autoPlay?: boolean;
-  muted?: boolean;
-  loop?: boolean;
 }
 
 export function VideoHero({
@@ -22,9 +19,6 @@ export function VideoHero({
   title = "Restaurant ALAS",
   subtitle = "Willkommen bei",
   badge = "Restaurant ALAS - Moos",
-  autoPlay = true,
-  muted = true,
-  loop = true,
 }: VideoHeroProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [videoError, setVideoError] = useState(false);

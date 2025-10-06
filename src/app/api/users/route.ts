@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
+import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-
-const DB_PATH = path.resolve(process.cwd(), '../restaurant.db');
-
-async function getDatabase() {
-  return open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-}
 
 // Get all users
 export async function GET(request: NextRequest) {
   try {
     // Check if user is authenticated and has permission
     const sessionId = request.cookies.get('session')?.value;
-    
+
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Nicht autorisiert' },
@@ -26,18 +15,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    
     // Verify user has admin rights
-    const session = await db.get(
+    const sessionResult = await query(
       `SELECT u.role FROM user_sessions s
        JOIN admin_users u ON s.user_id = u.id
-       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+       WHERE s.id = $1 AND s.expires_at > NOW()`,
       [sessionId]
     );
 
-    if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
-      await db.close();
+    if (sessionResult.rows.length === 0 ||
+        (sessionResult.rows[0].role !== 'admin' && sessionResult.rows[0].role !== 'super_admin')) {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung' },
         { status: 403 }
@@ -45,17 +32,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all users
-    const users = await db.all(
+    const usersResult = await query(
       `SELECT id, email, name, role, created_at, last_login, is_active
        FROM admin_users
        ORDER BY created_at DESC`
     );
 
-    await db.close();
-
     return NextResponse.json({
       success: true,
-      users
+      users: usersResult.rows
     });
 
   } catch (error) {
@@ -72,7 +57,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated and has permission
     const sessionId = request.cookies.get('session')?.value;
-    
+
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Nicht autorisiert' },
@@ -80,18 +65,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    
     // Verify user has admin rights
-    const session = await db.get(
+    const sessionResult = await query(
       `SELECT u.role FROM user_sessions s
        JOIN admin_users u ON s.user_id = u.id
-       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+       WHERE s.id = $1 AND s.expires_at > NOW()`,
       [sessionId]
     );
 
-    if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
-      await db.close();
+    if (sessionResult.rows.length === 0 ||
+        (sessionResult.rows[0].role !== 'admin' && sessionResult.rows[0].role !== 'super_admin')) {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung' },
         { status: 403 }
@@ -101,7 +84,6 @@ export async function POST(request: NextRequest) {
     const { email, password, name, role = 'admin' } = await request.json();
 
     if (!email || !password || !name) {
-      await db.close();
       return NextResponse.json(
         { success: false, error: 'Alle Felder sind erforderlich' },
         { status: 400 }
@@ -109,13 +91,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingUser = await db.get(
-      'SELECT id FROM admin_users WHERE email = ?',
+    const existingUserResult = await query(
+      'SELECT id FROM admin_users WHERE email = $1',
       [email]
     );
 
-    if (existingUser) {
-      await db.close();
+    if (existingUserResult.rows.length > 0) {
       return NextResponse.json(
         { success: false, error: 'E-Mail bereits vergeben' },
         { status: 400 }
@@ -126,18 +107,17 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const result = await db.run(
+    const result = await query(
       `INSERT INTO admin_users (email, password_hash, name, role)
-       VALUES (?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
       [email, hashedPassword, name, role]
     );
-
-    await db.close();
 
     return NextResponse.json({
       success: true,
       message: 'Benutzer erfolgreich erstellt',
-      userId: result.lastID
+      userId: result.rows[0].id
     });
 
   } catch (error) {
@@ -153,7 +133,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const sessionId = request.cookies.get('session')?.value;
-    
+
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Nicht autorisiert' },
@@ -161,18 +141,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    
     // Verify user has admin rights
-    const session = await db.get(
+    const sessionResult = await query(
       `SELECT u.role FROM user_sessions s
        JOIN admin_users u ON s.user_id = u.id
-       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+       WHERE s.id = $1 AND s.expires_at > NOW()`,
       [sessionId]
     );
 
-    if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
-      await db.close();
+    if (sessionResult.rows.length === 0 ||
+        (sessionResult.rows[0].role !== 'admin' && sessionResult.rows[0].role !== 'super_admin')) {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung' },
         { status: 403 }
@@ -182,7 +160,6 @@ export async function PUT(request: NextRequest) {
     const { id, email, name, role, is_active, password } = await request.json();
 
     if (!id) {
-      await db.close();
       return NextResponse.json(
         { success: false, error: 'Benutzer-ID erforderlich' },
         { status: 400 }
@@ -192,37 +169,36 @@ export async function PUT(request: NextRequest) {
     // Build update query
     const updates = [];
     const values = [];
+    let paramCount = 1;
 
     if (email) {
-      updates.push('email = ?');
+      updates.push(`email = $${paramCount++}`);
       values.push(email);
     }
     if (name) {
-      updates.push('name = ?');
+      updates.push(`name = $${paramCount++}`);
       values.push(name);
     }
     if (role) {
-      updates.push('role = ?');
+      updates.push(`role = $${paramCount++}`);
       values.push(role);
     }
     if (is_active !== undefined) {
-      updates.push('is_active = ?');
-      values.push(is_active ? 1 : 0);
+      updates.push(`is_active = $${paramCount++}`);
+      values.push(is_active);
     }
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      updates.push('password_hash = ?');
+      updates.push(`password_hash = $${paramCount++}`);
       values.push(hashedPassword);
     }
 
     values.push(id);
 
-    await db.run(
-      `UPDATE admin_users SET ${updates.join(', ')} WHERE id = ?`,
+    await query(
+      `UPDATE admin_users SET ${updates.join(', ')} WHERE id = $${paramCount}`,
       values
     );
-
-    await db.close();
 
     return NextResponse.json({
       success: true,
@@ -242,7 +218,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const sessionId = request.cookies.get('session')?.value;
-    
+
     if (!sessionId) {
       return NextResponse.json(
         { success: false, error: 'Nicht autorisiert' },
@@ -250,18 +226,15 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
-    
     // Verify user has super_admin rights
-    const session = await db.get(
+    const sessionResult = await query(
       `SELECT u.role FROM user_sessions s
        JOIN admin_users u ON s.user_id = u.id
-       WHERE s.id = ? AND s.expires_at > datetime('now')`,
+       WHERE s.id = $1 AND s.expires_at > NOW()`,
       [sessionId]
     );
 
-    if (!session || session.role !== 'super_admin') {
-      await db.close();
+    if (sessionResult.rows.length === 0 || sessionResult.rows[0].role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Keine Berechtigung' },
         { status: 403 }
@@ -272,7 +245,6 @@ export async function DELETE(request: NextRequest) {
     const userId = searchParams.get('id');
 
     if (!userId) {
-      await db.close();
       return NextResponse.json(
         { success: false, error: 'Benutzer-ID erforderlich' },
         { status: 400 }
@@ -280,26 +252,26 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Don't allow deleting the last super_admin
-    const superAdminCount = await db.get(
-      'SELECT COUNT(*) as count FROM admin_users WHERE role = ?',
+    const superAdminCountResult = await query(
+      'SELECT COUNT(*) as count FROM admin_users WHERE role = $1',
       ['super_admin']
     );
 
-    const userToDelete = await db.get(
-      'SELECT role FROM admin_users WHERE id = ?',
+    const userToDeleteResult = await query(
+      'SELECT role FROM admin_users WHERE id = $1',
       [userId]
     );
 
-    if (userToDelete?.role === 'super_admin' && superAdminCount?.count === 1) {
-      await db.close();
+    if (userToDeleteResult.rows.length > 0 &&
+        userToDeleteResult.rows[0].role === 'super_admin' &&
+        parseInt(superAdminCountResult.rows[0].count) === 1) {
       return NextResponse.json(
         { success: false, error: 'Der letzte Super-Admin kann nicht gelöscht werden' },
         { status: 400 }
       );
     }
 
-    await db.run('DELETE FROM admin_users WHERE id = ?', [userId]);
-    await db.close();
+    await query('DELETE FROM admin_users WHERE id = $1', [userId]);
 
     return NextResponse.json({
       success: true,
@@ -314,4 +286,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-

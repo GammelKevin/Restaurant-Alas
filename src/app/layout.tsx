@@ -4,25 +4,78 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/theme-context";
 import { ToastProvider } from "@/context/toast-context";
 import { VisitorTracker } from "@/components/visitor-tracker";
+import { SITE_CONFIG, SEO_KEYWORDS } from "@/lib/seo-config";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: 'swap',
 });
 
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Restaurant ALAS - Griechische Spezialitäten in Moos",
-  description: "Traditionelle griechische Küche im Restaurant ALAS in Moos, Niederbayern. Erleben Sie authentische griechische Gastfreundschaft und köstliche Spezialitäten.",
-  keywords: ["Restaurant", "Griechisch", "Moos", "Niederbayern", "Griechische Küche", "ALAS"],
-  authors: [{ name: "Restaurant ALAS" }],
-  viewport: "width=device-width, initial-scale=1",
+  metadataBase: new URL(SITE_CONFIG.url),
+  title: {
+    default: "Restaurant ALAS Moos | Griechische Spezialitäten Niederbayern",
+    template: "%s | Restaurant ALAS Moos",
+  },
+  description: SITE_CONFIG.description,
+  keywords: SEO_KEYWORDS,
+  authors: [{ name: SITE_CONFIG.name }],
+  creator: SITE_CONFIG.name,
+  publisher: SITE_CONFIG.name,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'de_DE',
+    url: SITE_CONFIG.url,
+    siteName: SITE_CONFIG.name,
+    title: 'Restaurant ALAS Moos | Griechische Spezialitäten Niederbayern',
+    description: SITE_CONFIG.description,
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Restaurant ALAS - Griechische Spezialitäten in Moos',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Restaurant ALAS Moos | Griechische Spezialitäten',
+    description: SITE_CONFIG.description,
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: SITE_CONFIG.url,
+  },
+  verification: {
+    // Add Google Search Console verification when available
+    // google: 'your-google-verification-code',
+  },
 };
 
 export default function RootLayout({

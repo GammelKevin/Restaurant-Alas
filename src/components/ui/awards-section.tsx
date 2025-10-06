@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { FileText, Award } from "lucide-react";
+import Image from "next/image";
 
 export function AwardsSection() {
   const awards = [
@@ -76,9 +77,11 @@ export function AwardsSection() {
             >
               <div className="p-8">
                 <div className="relative h-48 mb-6 flex items-center justify-center">
-                  <img
+                  <Image
                     src={award.image}
                     alt={award.title}
+                    width={300}
+                    height={192}
                     className="max-h-full w-auto object-contain transform group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
