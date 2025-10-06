@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run:*)",
+      "Bash(node -e \"const {Pool}=require(''pg'');const bcrypt=require(''bcryptjs'');const fs=require(''fs'');(async()=>{const pool=new Pool({connectionString:''postgresql://neondb_owner:npg_wymoGYT8Zs9t@ep-twilight-band-ag8cg6zq-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require'',ssl:{rejectUnauthorized:false}});const client=await pool.connect();let sql=fs.readFileSync(''src/lib/init-neon-db.sql'',''utf-8'');const hash=await bcrypt.hash(''Admin2024!'',10);sql=sql.replace(''$2a$10$PLACEHOLDER'',hash);await client.query(sql);console.log(''✅ Tabellen erstellt!'');client.release();await pool.end();})();\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
