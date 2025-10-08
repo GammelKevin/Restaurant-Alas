@@ -7,18 +7,10 @@ import { ReservationPopup } from "./reservation-popup";
 
 interface VideoHeroProps {
   videos?: string[];
-  fallbackImage?: string;
-  title?: string;
-  subtitle?: string;
-  badge?: string;
 }
 
 export function VideoHero({
   videos = [],
-  fallbackImage = "/images/hero-fallback.jpg",
-  title = "Restaurant ALAS",
-  subtitle = "Willkommen bei",
-  badge = "Restaurant ALAS - Moos",
 }: VideoHeroProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [videoError, setVideoError] = useState(false);
@@ -30,18 +22,34 @@ export function VideoHero({
   const [showReservationPopup, setShowReservationPopup] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [settings, setSettings] = useState({
+    hero_title: "Restaurant ALAS",
+    hero_subtitle: "Willkommen bei",
+    hero_badge: "Restaurant ALAS - Moos",
+    hero_description: "Authentische griechische Küche in gemütlicher Atmosphäre",
+  });
 
   useEffect(() => {
-    // Default videos - maximal 3
-    const defaultVideos = [
+    fetch('/api/settings?category=content', {
+      cache: 'no-store'  // Prevent Next.js from caching settings
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(prev => ({ ...prev, ...data.data.settings }));
+        }
+      })
+      .catch(err => console.error('Failed to load settings:', err));
+  }, []);
+
+  useEffect(() => {
+    // Fixed videos - always the same 3 videos
+    const videoList = [
       "/videos/restaurant-hero-1.mp4",
       "/videos/restaurant-hero-2.mp4",
       "/videos/restaurant-hero-3.mp4",
     ];
 
-    // Use provided videos or default, limit to 3
-    const videoList =
-      videos.length > 0 ? videos.slice(0, 3) : defaultVideos.slice(0, 3);
     setVideosToPlay(videoList);
 
     // Preload all videos
@@ -76,7 +84,7 @@ export function VideoHero({
     };
 
     preloadVideos();
-  }, [videos]);
+  }, []); // Empty array = run only once on mount
 
   // Preload next video when current is playing
   useEffect(() => {
@@ -150,7 +158,6 @@ export function VideoHero({
               onEnded={handleVideoEnd}
               onError={handleVideoError}
               onCanPlayThrough={() => setIsLoading(false)}
-              poster={fallbackImage}
             >
               <source src={videosToPlay[currentVideoIndex]} type="video/mp4" />
               Your browser does not support the video tag.
@@ -158,12 +165,8 @@ export function VideoHero({
           </motion.div>
         </AnimatePresence>
       ) : (
-        /* Fallback Image */
-        <div
-          className="absolute top-0 left-0 w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${fallbackImage})` }}
-          onLoad={() => setIsLoading(false)}
-        />
+        /* Fallback - dark background if videos fail */
+        <div className="absolute top-0 left-0 w-full h-full bg-gray-900" />
       )}
 
       {/* Overlay - lighter for better video visibility */}
@@ -177,7 +180,7 @@ export function VideoHero({
           transition={{ duration: 0.8, delay: 0.2 }}
           className="max-w-4xl mx-auto"
         >
-          {badge && (
+          {settings.hero_badge && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{
@@ -188,7 +191,7 @@ export function VideoHero({
               className="inline-block mb-6"
             >
               <span className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium border border-white/20">
-                {badge}
+                {settings.hero_badge}
               </span>
             </motion.div>
           )}
@@ -200,9 +203,9 @@ export function VideoHero({
             className="text-5xl md:text-7xl font-bold text-white mb-6"
           >
             <span className="block text-3xl md:text-5xl font-light mb-2 text-blue-300">
-              {subtitle}
+              {settings.hero_subtitle}
             </span>
-            {title}
+            {settings.hero_title}
           </motion.h1>
 
           <motion.p
@@ -211,7 +214,7 @@ export function VideoHero({
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto"
           >
-            Authentische griechische Küche in gemütlicher Atmosphäre
+            {settings.hero_description}
           </motion.p>
 
           <motion.div

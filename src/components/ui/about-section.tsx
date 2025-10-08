@@ -2,11 +2,28 @@
 
 import { motion } from "framer-motion";
 import { Award, Users, Clock, Heart, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FamilyStoryModal } from "./family-story-modal";
 
 export function AboutSection() {
   const [isFamilyStoryOpen, setIsFamilyStoryOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    about_title: "Über Restaurant ALAS",
+    about_description: "Herzlich willkommen im Restaurant ALAS! Seit über 30 Jahren servieren wir Ihnen authentische griechische Spezialitäten in familiärer Atmosphäre. Unser Restaurant wurde 2024 als \"Lokal des Jahres Deutschland\" für griechische Küche ausgezeichnet.",
+  });
+
+  useEffect(() => {
+    fetch('/api/settings?category=content', {
+      cache: 'no-store'
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(prev => ({ ...prev, ...data.data.settings }));
+        }
+      })
+      .catch(err => console.error('Failed to load settings:', err));
+  }, []);
   
   const features = [
     {
@@ -63,12 +80,10 @@ export function AboutSection() {
           transition={{ duration: 0.8 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold font-serif text-gray-900 mb-4">
-            Über Restaurant ALAS
+            {settings.about_title}
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Herzlich willkommen im Restaurant ALAS! Seit über 30 Jahren servieren wir Ihnen 
-            authentische griechische Spezialitäten in familiärer Atmosphäre. Unser Restaurant 
-            wurde 2024 als &quot;Lokal des Jahres Deutschland&quot; für griechische Küche ausgezeichnet.
+            {settings.about_description}
           </p>
           
           <motion.button

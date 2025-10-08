@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from '@/lib/db';
+import { verifyAdminAuth } from '@/lib/auth';
 
 // German weekday order for proper sorting
 const WEEKDAY_ORDER: { [key: string]: number } = {
@@ -63,6 +64,15 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Verify authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, error: authResult.error },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     // Validate required fields

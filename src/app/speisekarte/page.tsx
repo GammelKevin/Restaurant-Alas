@@ -44,9 +44,23 @@ export default function SpeisekartePage() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [settings, setSettings] = useState({
+    contact_phone: '09938 / 23 203 07',
+    contact_phone_formatted: '+4909938230307',
+    contact_email: 'info@restaurant-alas.de'
+  });
 
   useEffect(() => {
     fetchMenuData();
+
+    fetch('/api/settings?category=contact')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(prev => ({ ...prev, ...data.data.settings }));
+        }
+      })
+      .catch(err => console.error('Failed to load settings:', err));
   }, []);
 
   const fetchMenuData = async () => {
@@ -475,19 +489,19 @@ export default function SpeisekartePage() {
                 <p className="text-gray-900 dark:text-white">
                   <strong>Telefon:</strong>{" "}
                   <a
-                    href="tel:+4909938230307"
+                    href={`tel:${settings.contact_phone_formatted}`}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
-                    09938 2320307
+                    {settings.contact_phone}
                   </a>
                 </p>
                 <p className="text-gray-900 dark:text-white">
                   <strong>E-Mail:</strong>{" "}
                   <a
-                    href="mailto:info@restaurant-alas.de"
+                    href={`mailto:${settings.contact_email}`}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
-                    info@restaurant-alas.de
+                    {settings.contact_email}
                   </a>
                 </p>
               </div>

@@ -2,8 +2,32 @@
 
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Facebook, Instagram } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function ContactSection() {
+  const [settings, setSettings] = useState({
+    contact_phone: '09938 / 23 203 07',
+    contact_phone_formatted: '+4909938230307',
+    contact_email: 'info@restaurant-alas.de',
+    contact_address_street: 'Bundesstraße 39',
+    contact_address_city: '94554 Moos, Niederbayern',
+    contact_facebook: 'https://www.facebook.com/p/Griechisches-Restaurant-ALAS-61552077044507/',
+    contact_instagram: 'https://www.instagram.com/griechischesrestaurantalas/'
+  });
+
+  useEffect(() => {
+    fetch('/api/settings?category=contact', {
+      cache: 'no-store'
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSettings(prev => ({ ...prev, ...data.data.settings }));
+        }
+      })
+      .catch(err => console.error('Failed to load settings:', err));
+  }, []);
+
   return (
     <section
       id="contact"
@@ -47,9 +71,9 @@ export function ContactSection() {
                       Adresse
                     </h4>
                     <p className="text-gray-600">
-                      Bundesstraße 39
+                      {settings.contact_address_street}
                       <br />
-                      94554 Moos, Niederbayern
+                      {settings.contact_address_city}
                       <br />
                       Deutschland
                     </p>
@@ -63,10 +87,10 @@ export function ContactSection() {
                       Telefon
                     </h4>
                     <a
-                      href="tel:+4909938230307"
+                      href={`tel:${settings.contact_phone_formatted}`}
                       className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
                     >
-                      09938 / 23 203 07
+                      {settings.contact_phone}
                     </a>
                   </div>
                 </div>
@@ -76,10 +100,10 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1">E-Mail</h4>
                     <a
-                      href="mailto:info@restaurant-alas.de"
+                      href={`mailto:${settings.contact_email}`}
                       className="text-blue-600 hover:text-blue-700 transition-colors duration-300"
                     >
-                      info@restaurant-alas.de
+                      {settings.contact_email}
                     </a>
                   </div>
                 </div>
@@ -92,7 +116,7 @@ export function ContactSection() {
                 </h4>
                 <div className="flex space-x-4">
                   <a
-                    href="https://www.facebook.com/p/Griechisches-Restaurant-ALAS-61552077044507/?locale=de_DE"
+                    href={settings.contact_facebook}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors duration-300"
@@ -100,7 +124,7 @@ export function ContactSection() {
                     <Facebook size={20} />
                   </a>
                   <a
-                    href="https://www.instagram.com/griechischesrestaurantalas/"
+                    href={settings.contact_instagram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center hover:from-purple-600 hover:to-pink-600 transition-all duration-300"

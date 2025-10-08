@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import { query } from '@/lib/db';
+import { verifyAdminAuth } from '@/lib/auth';
 
-const DB_PATH = path.resolve(process.cwd(), '../restaurant.db');
-
-async function getDatabase() {
-  return open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-}
-
+// Upload image for menu item (Admin only)
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, error: authResult.error },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const itemId = formData.get('itemId') as string;
@@ -35,6 +36,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { success: false, error: 'File size must be less than 5MB' },
+        { status: 400 }
+      );
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
     const extension = path.extname(file.name);
@@ -50,13 +60,11 @@ export async function POST(request: NextRequest) {
     const filepath = path.join(uploadsDir, filename);
     await writeFile(filepath, buffer);
 
-    // Update database
-    const db = await getDatabase();
-    await db.run(
-      'UPDATE menu_item SET image_path = ? WHERE id = ?',
+    // Update database with PostgreSQL
+    await query(
+      'UPDATE menu_items SET image_path = $1 WHERE id = $2',
       [filename, parseInt(itemId)]
     );
-    await db.close();
 
     return NextResponse.json({
       success: true,
@@ -78,9 +86,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Delete image
+// Delete/remove image from menu item (Admin only)
 export async function DELETE(request: NextRequest) {
   try {
+    // Verify authentication
+    const authResult = await verifyAdminAuth(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { success: false, error: authResult.error },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get('itemId');
 
@@ -92,12 +109,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Update database to remove image path
-    const db = await getDatabase();
-    await db.run(
-      'UPDATE menu_item SET image_path = NULL WHERE id = ?',
+    await query(
+      'UPDATE menu_items SET image_path = NULL WHERE id = $1',
       [parseInt(itemId)]
     );
-    await db.close();
 
     return NextResponse.json({
       success: true,
@@ -116,4 +131,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-

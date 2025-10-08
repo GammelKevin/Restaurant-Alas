@@ -20,10 +20,31 @@ interface OpeningHour {
 export function OpeningHours() {
   const [hours, setHours] = useState<OpeningHour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState({
+    contact_phone: '09938 / 23 203 07',
+    contact_phone_formatted: '+4909938230307',
+    contact_address_street: 'Bundesstraße 39',
+    contact_address_city: '94554 Moos, Niederbayern'
+  });
 
   useEffect(() => {
     fetchOpeningHours();
+    fetchSettings();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings?category=contact', {
+        cache: 'no-store'
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSettings(prev => ({ ...prev, ...data.data.settings }));
+      }
+    } catch (err) {
+      console.error('Failed to load settings:', err);
+    }
+  };
 
   const fetchOpeningHours = async () => {
     try {
@@ -131,6 +152,14 @@ export function OpeningHours() {
     },
   ];
 
+  // Helper to format time string (remove seconds from HH:MM:SS)
+  const formatTime = (time: string | number | null | undefined): string => {
+    if (!time) return "";
+    const timeStr = String(time).trim();
+    // Remove seconds: "17:00:00" → "17:00"
+    return timeStr.substring(0, 5);
+  };
+
   const formatTimeString = (hour: OpeningHour): string => {
     // Check if closed or on vacation
     if (hour.closed || hour.closed === 1) return "Geschlossen";
@@ -147,14 +176,14 @@ export function OpeningHours() {
     let result = "";
 
     if (isValidTime(hour.open_time_1) && isValidTime(hour.close_time_1)) {
-      result = `${hour.open_time_1} - ${hour.close_time_1}`;
+      result = `${formatTime(hour.open_time_1)} - ${formatTime(hour.close_time_1)}`;
     }
 
     if (isValidTime(hour.open_time_2) && isValidTime(hour.close_time_2)) {
       if (result) {
-        result += ` & ${hour.open_time_2} - ${hour.close_time_2}`;
+        result += ` & ${formatTime(hour.open_time_2)} - ${formatTime(hour.close_time_2)}`;
       } else {
-        result = `${hour.open_time_2} - ${hour.close_time_2}`;
+        result = `${formatTime(hour.open_time_2)} - ${formatTime(hour.close_time_2)}`;
       }
     }
 
@@ -297,10 +326,10 @@ export function OpeningHours() {
                   <div>
                     <p className="font-semibold mb-1">Telefon</p>
                     <a
-                      href="tel:+4909938230307"
+                      href={`tel:${settings.contact_phone_formatted}`}
                       className="text-blue-100 hover:text-white transition-colors duration-300"
                     >
-                      09938 / 23 203 07
+                      {settings.contact_phone}
                     </a>
                   </div>
                 </div>
@@ -310,9 +339,9 @@ export function OpeningHours() {
                   <div>
                     <p className="font-semibold mb-1">Adresse</p>
                     <p className="text-blue-100">
-                      Bundesstraße 39
+                      {settings.contact_address_street}
                       <br />
-                      94554 Moos, Niederbayern
+                      {settings.contact_address_city}
                     </p>
                   </div>
                 </div>
@@ -325,7 +354,7 @@ export function OpeningHours() {
                   Wir freuen uns auf Ihren Besuch!
                 </p>
                 <a
-                  href="tel:+4909938230307"
+                  href={`tel:${settings.contact_phone_formatted}`}
                   className="inline-block w-full py-3 px-6 bg-white text-blue-700 rounded-lg font-semibold text-center hover:bg-gray-100 transition-colors duration-300"
                 >
                   Jetzt reservieren
